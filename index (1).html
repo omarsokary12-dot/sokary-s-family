@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sokary's Family</title>
+<style>
+  :root { --blue:#1E6FFF; --navy:#0A1F44; --light:#EAF2FF; --card:#FFFFFF; --text:#0A1F44; --muted:#5A6B8C; --border:#D6E2F5; --red:#E5484D; --green:#16A34A; --warn:#F59E0B; --field:#F5F8FD; }
+  @media (prefers-color-scheme: dark) {
+    :root { --light:#0A1F44; --card:#122B57; --text:#F2F6FF; --muted:#9FB3D6; --border:#24457A; --field:#0A1F44; }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family: Inter, system-ui, sans-serif; background:var(--light); color:var(--text); min-height:100vh; }
+  button { font:inherit; cursor:pointer; border:none; border-radius:12px; }
+  input, select { font:inherit; width:100%; height:44px; border-radius:12px; border:1px solid var(--border); background:var(--field); color:var(--text); padding:0 12px; font-size:15px; }
+  input:focus, select:focus { outline:2px solid var(--blue); outline-offset:0; }
+  input.bad { border-color:var(--red); }
+  .hidden { display:none !important; }
+  .wrap { max-width:460px; margin:0 auto; padding:16px 16px 110px; }
+  .auth-wrap { max-width:420px; margin:0 auto; padding:32px 16px; }
+  .logo { display:flex; flex-direction:column; align-items:center; gap:8px; margin-bottom:20px; }
+  .logo svg { width:64px; height:64px; }
+  .brand { font-size:24px; font-weight:800; color:var(--blue); }
+  .card { background:var(--card); border-radius:20px; padding:18px; margin-top:14px; box-shadow:0 8px 24px rgba(10,31,68,.07); }
+  h2 { margin:0 0 12px; font-size:18px; font-weight:700; }
+  h3 { margin:0 0 8px; font-size:15px; font-weight:700; }
+  label { display:block; font-size:13px; color:var(--muted); margin:10px 0 4px; }
+  .stack > * + * { margin-top:8px; }
+  .primary { width:100%; height:46px; background:var(--blue); color:#fff; font-size:15px; font-weight:700; margin-top:12px; transition:transform .15s; }
+  .primary:active, .btn:active, .nav button:active { transform:scale(.96); }
+  .primary:disabled { opacity:.6; }
+  .btn { height:36px; padding:0 12px; background:transparent; color:var(--text); border:1px solid var(--border); font-size:13px; font-weight:600; transition:transform .15s; white-space:nowrap; }
+  .btn.p { background:var(--blue); color:#fff; border-color:var(--blue); }
+  .btn.d { color:var(--red); }
+  .btn.g { color:var(--green); }
+  .link { background:none; color:var(--blue); font-size:14px; padding:8px; width:100%; margin-top:4px; }
+  .err { color:var(--red); font-size:12px; min-height:14px; margin-top:4px; }
+  .msg { font-size:14px; font-weight:600; text-align:center; min-height:20px; margin-top:12px; }
+  .ok { color:var(--green); } .no { color:var(--red); }
+  .muted { color:var(--muted); font-size:13px; }
+  .row { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .row.wrap2 { flex-wrap:wrap; }
+  .grow { flex:1; min-width:0; }
+  .amt { font-weight:700; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .item { display:flex; align-items:center; gap:10px; padding:12px 0; border-top:1px solid var(--border); }
+  .item:first-child { border-top:none; }
+  .chip { width:36px; height:36px; border-radius:12px; flex:none; }
+  .hero { background:var(--blue); color:#fff; border-radius:22px; padding:20px; margin-top:14px; }
+  .hero .muted { color:rgba(255,255,255,.85); }
+  .hero .bal { font-size:32px; font-weight:800; font-variant-numeric:tabular-nums; margin:4px 0 14px; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .grid2 .v { font-size:16px; font-weight:700; font-variant-numeric:tabular-nums; }
+  .bar { height:8px; border-radius:4px; background:rgba(255,255,255,.3); margin-top:14px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:#fff; border-radius:4px; transition:width .6s; }
+  .lbar { height:8px; border-radius:4px; background:var(--field); overflow:hidden; margin-top:6px; }
+  .lbar i { display:block; height:100%; background:var(--blue); border-radius:4px; transition:width .6s; }
+  .warn { background:#FEF3C7; color:#854F0B; border-radius:14px; padding:10px 14px; font-size:13px; margin-top:14px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:8px; }
+  .topbar .brand { font-size:18px; }
+  .month { display:flex; align-items:center; gap:6px; background:var(--card); border-radius:14px; padding:4px; }
+  .month button { background:transparent; color:var(--text); width:32px; height:32px; font-size:18px; border-radius:10px; }
+  .month span { font-size:14px; font-weight:700; min-width:110px; text-align:center; }
+  .nav { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--border); display:grid; grid-template-columns:repeat(5,1fr); padding:6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  .nav button { background:transparent; color:var(--muted); font-size:11px; padding:6px 0; display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .15s; }
+  .nav button.on { color:var(--blue); font-weight:700; }
+  .nav i { font-size:20px; }
+  .toast { position:fixed; left:50%; transform:translateX(-50%); bottom:90px; background:var(--navy); color:#fff; padding:10px 16px; border-radius:12px; font-size:14px; max-width:90%; text-align:center; box-shadow:0 8px 24px rgba(0,0,0,.2); }
+  .toast.err { background:var(--red); }
+  .bars { display:flex; align-items:flex-end; gap:10px; height:150px; padding-top:8px; }
+  .bcol { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; gap:4px; }
+  .bpair { display:flex; align-items:flex-end; gap:3px; height:120px; width:100%; justify-content:center; }
+  .bpair i { width:40%; border-radius:6px 6px 0 0; display:block; transition:height .6s; min-height:2px; }
+  .legend { display:flex; gap:14px; font-size:12px; color:var(--muted); margin-top:6px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:4px; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<!-- ============ AUTH ============ -->
+<div id="auth" class="auth-wrap">
+  <div class="logo">
+    <svg viewBox="0 0 512 512" aria-hidden="true"><rect width="512" height="512" rx="112" fill="#1E6FFF"/><path d="M256 110 L404 232 V404 Q404 420 388 420 H124 Q108 420 108 404 V232 Z" fill="#FFFFFF"/><circle cx="256" cy="318" r="62" fill="#F5C451"/><circle cx="256" cy="318" r="44" fill="none" stroke="#C28A1A" stroke-width="8"/></svg>
+    <div class="brand">Sokary's Family</div>
+  </div>
+  <div class="card" style="margin-top:0">
+    <h2 id="authTitle">Welcome back</h2>
+    <div id="nameField" class="hidden"><label for="aName">Full name</label><input id="aName" autocomplete="name"><div class="err" data-for="aName"></div></div>
+    <label for="aEmail">Email</label><input id="aEmail" type="email" autocomplete="email"><div class="err" data-for="aEmail"></div>
+    <div id="pwField"><label for="aPw">Password</label><input id="aPw" type="password" autocomplete="current-password"><div class="err" data-for="aPw"></div></div>
+    <div id="cpwField" class="hidden"><label for="aCpw">Confirm password</label><input id="aCpw" type="password" autocomplete="new-password"><div class="err" data-for="aCpw"></div></div>
+    <button class="primary" id="authBtn">Log in</button>
+    <div class="msg" id="authMsg"></div>
+    <button class="link" id="toForgot">Forgot password?</button>
+    <button class="link" id="toSignup">No account? Create one</button>
+    <button class="link hidden" id="toLogin">Back to log in</button>
+  </div>
+</div>
+
+<!-- ============ NEW PASSWORD ============ -->
+<div id="reset" class="auth-wrap hidden">
+  <div class="logo"><div class="brand">Sokary's Family</div></div>
+  <div class="card" style="margin-top:0">
+    <h2>Choose a new password</h2>
+    <label for="rPw">New password</label><input id="rPw" type="password" autocomplete="new-password"><div class="err" data-for="rPw"></div>
+    <label for="rPw2">Confirm password</label><input id="rPw2" type="password" autocomplete="new-password"><div class="err" data-for="rPw2"></div>
+    <button class="primary" id="resetBtn">Save password</button>
+    <div class="msg" id="resetMsg"></div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="wrap hidden">
+  <div class="topbar">
+    <div class="brand">Sokary's Family</div>
+    <div class="month">
+      <button data-act="prev" aria-label="Previous month">&#8249;</button>
+      <span id="monthLabel"></span>
+      <button data-act="next" aria-label="Next month">&#8250;</button>
+    </div>
+  </div>
+  <div id="content"></div>
+</div>
+
+<div class="nav hidden" id="nav"></div>
+<div class="toast hidden" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+function showError(text) {
+  const m = document.getElementById('authMsg');
+  if (m) { m.className = 'msg no'; m.textContent = text; }
+  const a = document.getElementById('auth');
+  if (a) a.classList.remove('hidden');
+}
+window.addEventListener('error', (e) => showError('Error: ' + e.message));
+window.addEventListener('unhandledrejection', (e) => showError('Error: ' + (e.reason && e.reason.message || e.reason)));
+// ================= CONFIG =================
+const SUPABASE_URL = 'https://vwwdxqfnlzjjeutkvvau.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3d2R4cWZubHpqamV1dGt2dmF1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE1ODQwMDYsImV4cCI6MjEwNzE2MDAwNn0.tFZHq-P-BWfz5FvAyMU3jAJNIAA6Qa3q1Pzjd0-RMKw';
+let sb = null;
+if (window.supabase && window.supabase.createClient) {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+} else {
+  showError('The Supabase library did not load. Check your internet connection, then reload the page.');
+}
+
+// ================= STATE =================
+const CATS = {
+  food:{n:'Food',c:'#1E6FFF'}, transport:{n:'Transport',c:'#7C3AED'}, shopping:{n:'Shopping',c:'#EC4899'},
+  health:{n:'Health',c:'#16A34A'}, bills:{n:'Bills',c:'#F59E0B'}, entertainment:{n:'Entertainment',c:'#06B6D4'},
+  housing:{n:'Housing',c:'#EF4444'}, other:{n:'Other',c:'#64748B'}
+};
+const settings = Object.assign({ cur:'EGP', low:500, dueDays:2 }, JSON.parse(localStorage.getItem('sf_settings') || '{}'));
+const D = { incomes:[], vars:[], fixed:[], pays:[], goals:[] };
+const ui = { tab:'home', month: monthKey(new Date()), user:null, loaded:false, mode:'login' };
+
+// ================= HELPERS =================
+const $ = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, '0');
+const isoDate = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const monthKey = (d) => `${d.getFullYear()}-${pad(d.getMonth()+1)}`;
+const todayStr = () => isoDate(new Date());
+const todayD = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); };
+const uuid = () => crypto.randomUUID();
+const toMinor = (a) => Math.round(a * 100);
+const sum = (arr, f) => arr.reduce((s, x) => s + Number(f(x) || 0), 0);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const val = (id) => ($(id)?.value ?? '').trim();
+const num = (id) => parseFloat($(id)?.value);
+const catName = (k) => (CATS[k] ? CATS[k].n : 'Other');
+const catColor = (k) => (CATS[k] ? CATS[k].c : '#64748B');
+const money = (minor) => new Intl.NumberFormat('en-US', { style:'currency', currency: settings.cur, maximumFractionDigits: 2 }).format(minor / 100);
+const monthLabel = (ym) => { const [y,m] = ym.split('-').map(Number); return new Date(y, m-1, 1).toLocaleDateString('en-US', { month:'long', year:'numeric' }); };
+
+function addMonths(ym, delta) {
+  const [y, m] = ym.split('-').map(Number);
+  return monthKey(new Date(y, m - 1 + delta, 1));
+}
+function dueDate(ym, day) {
+  const [y, m] = ym.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return new Date(y, m - 1, Math.min(day, last));
+}
+function firstCharge(day) {
+  const t = todayD(), tm = monthKey(t);
+  return dueDate(tm, day) < t ? addMonths(tm, 1) : tm;
+}
+const paidIn = (fid, m) => D.pays.some((p) => p.fixed_id === fid && p.year_month === m);
+
+function toast(msg, isErr) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isErr ? ' err' : '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+// ================= DATA =================
+async function loadAll() {
+  const [inc, vr, fx, py, gl] = await Promise.all([
+    sb.from('incomes').select('*').order('date', { ascending:false }),
+    sb.from('variable_expenses').select('*').order('date', { ascending:false }),
+    sb.from('fixed_expenses').select('*').order('created_at'),
+    sb.from('fixed_payments').select('*').order('paid_on', { ascending:false }),
+    sb.from('savings_goals').select('*').order('created_at'),
+  ]);
+  for (const r of [inc, vr, fx, py, gl]) if (r.error) throw r.error;
+  D.incomes = inc.data; D.vars = vr.data; D.fixed = fx.data; D.pays = py.data; D.goals = gl.data;
+  await processDue();
+}
+
+// Records every fixed bill that has come due and isn't paid yet. Safe to run repeatedly.
+async function processDue() {
+  const tm = monthKey(new Date()), t = todayD();
+  const rows = [];
+  for (const f of D.fixed) {
+    if (f.is_paused) continue;
+    let m = f.start_month;
+    while (m <= tm) {
+      if (dueDate(m, f.due_day) > t) break;
+      if (!paidIn(f.id, m)) {
+        rows.push({ id: uuid(), fixed_id: f.id, name: f.name, category_id: f.category_id, year_month: m,
+          amount_minor: f.amount_minor, paid_on: isoDate(dueDate(m, f.due_day)) });
+      }
+      m = addMonths(m, 1);
+    }
+  }
+  if (!rows.length) return;
+  const { error } = await sb.from('fixed_payments').upsert(rows, { onConflict:'fixed_id,year_month', ignoreDuplicates:true });
+  if (error) throw error;
+  const { data, error: e2 } = await sb.from('fixed_payments').select('*').order('paid_on', { ascending:false });
+  if (e2) throw e2;
+  D.pays = data;
+}
+
+function calc() {
+  const m = ui.month;
+  const bal = sum(D.incomes, x => x.amount_minor) - sum(D.vars, x => x.amount_minor) - sum(D.pays, x => x.amount_minor);
+  const incM = sum(D.incomes.filter(x => x.date.startsWith(m)), x => x.amount_minor);
+  const varM = sum(D.vars.filter(x => x.date.startsWith(m)), x => x.amount_minor);
+  const payM = sum(D.pays.filter(x => x.year_month === m), x => x.amount_minor);
+  const remaining = sum(D.fixed.filter(f => !f.is_paused && f.start_month <= m && !paidIn(f.id, m)), f => f.amount_minor);
+  return { bal, incM, spentM: varM + payM, remaining, safe: bal - remaining };
+}
+
+function ledger(m) {
+  const rows = [];
+  D.incomes.filter(x => x.date.startsWith(m)).forEach(x => rows.push({ d:x.date, out:false, l:x.source, a:x.amount_minor }));
+  D.vars.filter(x => x.date.startsWith(m)).forEach(x => rows.push({ d:x.date, out:true, l:x.note || catName(x.category_id), a:x.amount_minor }));
+  D.pays.filter(x => x.year_month === m).forEach(x => rows.push({ d:x.paid_on, out:true, l:x.name, a:x.amount_minor }));
+  return rows.sort((a, b) => (a.d < b.d ? 1 : -1));
+}
+
+// ================= RENDER =================
+function render() {
+  const loggedIn = !!ui.user;
+  $('auth').classList.toggle('hidden', loggedIn);
+  $('app').classList.toggle('hidden', !loggedIn);
+  $('nav').classList.toggle('hidden', !loggedIn);
+  if (!loggedIn) return;
+  $('monthLabel').textContent = monthLabel(ui.month);
+  document.querySelectorAll('#nav button').forEach((b) => b.classList.toggle('on', b.dataset.tab === ui.tab));
+  const c = calc();
+  const views = { home: viewHome, expenses: viewExpenses, reports: viewReports, goals: viewGoals, settings: viewSettings };
+  $('content').innerHTML = views[ui.tab](c);
+  renderNav();
+}
+
+function renderNav() {
+  const tabs = [['home','ti-home','Home'],['expenses','ti-receipt-2','Expenses'],['reports','ti-chart-pie','Reports'],['goals','ti-flag','Goals'],['settings','ti-settings','Settings']];
+  $('nav').innerHTML = tabs.map(([k, ic, label]) =>
+    `<button data-act="tab" data-tab="${k}" aria-label="${label}"><i class="ti ${ic}" aria-hidden="true"></i><span>${label}</span></button>`).join('');
+}
+
+function opts(sel) {
+  return Object.keys(CATS).map((k) => `<option value="${k}"${k === sel ? ' selected' : ''}>${CATS[k].n}</option>`).join('');
+}
+
+function viewHome(c) {
+  const warns = [];
+  if (c.bal < settings.low * 100) warns.push(`Balance is below your alert of ${money(settings.low * 100)}.`);
+  const tm = monthKey(new Date()), t = todayD();
+  const soon = D.fixed.filter((f) => {
+    if (f.is_paused || paidIn(f.id, tm) || f.start_month > tm) return false;
+    const diff = Math.round((dueDate(tm, f.due_day) - t) / 86400000);
+    return diff >= 0 && diff <= settings.dueDays;
+  });
+  if (soon.length) warns.push(`${soon.length} bill(s) due within ${settings.dueDays} day(s).`);
+  const pct = c.bal > 0 ? Math.max(0, Math.min(100, (c.safe / c.bal) * 100)) : 0;
+  const rows = ledger(ui.month).slice(0, 8);
+
+  return `
+  <div class="hero">
+    <div class="muted">Current balance</div>
+    <div class="bal">${money(c.bal)}</div>
+    <div class="grid2">
+      <div><div class="muted">Income this month</div><div class="v">${money(c.incM)}</div></div>
+      <div><div class="muted">Spent this month</div><div class="v">${money(c.spentM)}</div></div>
+      <div><div class="muted">Fixed still due</div><div class="v">${money(c.remaining)}</div></div>
+      <div><div class="muted">Safe to spend</div><div class="v">${money(c.safe)}</div></div>
+    </div>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+  </div>
+  ${warns.map((w) => `<div class="warn">${esc(w)}</div>`).join('')}
+
+  <div class="card">
+    <h2>Quick add</h2>
+    <div class="stack">
+      <input id="hAmt" type="number" min="0" step="0.01" placeholder="Amount">
+      <input id="hNote" placeholder="Note or source (optional)">
+      <select id="hCat">${opts('other')}</select>
+      <div class="row">
+        <button class="btn g grow" data-act="addIncome">+ Add income</button>
+        <button class="btn d grow" data-act="addExpense">− Add expense</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>History</h2>
+    ${rows.length ? rows.map((r) => `
+      <div class="item">
+        <div class="grow"><div>${esc(r.l)}</div><div class="muted">${esc(r.d)}</div></div>
+        <div class="amt" style="color:${r.out ? 'var(--red)' : 'var(--green)'}">${r.out ? '−' : '+'}${money(r.a)}</div>
+      </div>`).join('') : '<div class="muted">No transactions this month.</div>'}
+  </div>`;
+}
+
+function viewExpenses(c) {
+  const vars = D.vars.filter((x) => x.date.startsWith(ui.month));
+  const fixed = D.fixed;
+  return `
+  <div class="card">
+    <h2>Add expense</h2>
+    <div class="stack">
+      <input id="eAmt" type="number" min="0" step="0.01" placeholder="Amount">
+      <select id="eCat">${opts('food')}</select>
+      <input id="eNote" placeholder="Note (optional)">
+      <input id="eDate" type="date" value="${todayStr()}">
+      <button class="primary" data-act="addVar">Add expense</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Variable expenses</h2>
+    ${vars.length ? vars.map((v) => `
+      <div class="item">
+        <div class="chip" style="background:${catColor(v.category_id)}"></div>
+        <div class="grow"><div>${esc(v.note || catName(v.category_id))}</div><div class="muted">${esc(catName(v.category_id))} · ${esc(v.date)}</div></div>
+        <div class="amt">${money(v.amount_minor)}</div>
+        <button class="btn d" data-act="delVar" data-id="${v.id}" aria-label="Delete">✕</button>
+      </div>`).join('') : '<div class="muted">No variable expenses this month.</div>'}
+  </div>
+
+  <div class="card">
+    <h2>Add fixed bill</h2>
+    <div class="stack">
+      <input id="fName" placeholder="Name (rent, installment, internet)">
+      <input id="fAmt" type="number" min="0" step="0.01" placeholder="Amount per month">
+      <input id="fDue" type="number" min="1" max="31" placeholder="Due day (1-31)">
+      <select id="fCat">${opts('bills')}</select>
+      <button class="primary" data-act="addFix">Add fixed bill</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Fixed bills</h2>
+    ${fixed.length ? fixed.map((f) => {
+      const paid = paidIn(f.id, ui.month);
+      const status = paid ? '<span class="ok">Paid this month</span>' : f.is_paused ? '<span class="muted">Paused</span>' : `<span class="muted">Due day ${f.due_day}</span>`;
+      return `
+      <div class="item">
+        <div class="chip" style="background:${catColor(f.category_id)}"></div>
+        <div class="grow"><div>${esc(f.name)}</div><div>${status}</div></div>
+        <div class="amt">${money(f.amount_minor)}</div>
+      </div>
+      <div class="row wrap2" style="justify-content:flex-end;margin-bottom:6px">
+        ${!paid ? `<button class="btn p" data-act="payFix" data-id="${f.id}">Pay</button>` : ''}
+        <button class="btn" data-act="toggleFix" data-id="${f.id}">${f.is_paused ? 'Resume' : 'Pause'}</button>
+        <button class="btn d" data-act="delFix" data-id="${f.id}">Delete</button>
+      </div>`;
+    }).join('') : '<div class="muted">No fixed bills yet.</div>'}
+  </div>`;
+}
+
+function viewReports(c) {
+  const months = [];
+  for (let i = 5; i >= 0; i--) {
+    const m = addMonths(ui.month, -i);
+    const inc = sum(D.incomes.filter((x) => x.date.startsWith(m)), x => x.amount_minor);
+    const exp = sum(D.vars.filter((x) => x.date.startsWith(m)), x => x.amount_minor) + sum(D.pays.filter((x) => x.year_month === m), x => x.amount_minor);
+    months.push({ m, inc, exp });
+  }
+  const max = Math.max(1, ...months.map((x) => Math.max(x.inc, x.exp)));
+
+  const byCat = {};
+  D.vars.filter((x) => x.date.startsWith(ui.month)).forEach((x) => { byCat[x.category_id] = (byCat[x.category_id] || 0) + x.amount_minor; });
+  D.pays.filter((x) => x.year_month === ui.month).forEach((x) => { byCat[x.category_id] = (byCat[x.category_id] || 0) + x.amount_minor; });
+  const total = Object.values(byCat).reduce((s, v) => s + v, 0);
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+
+  return `
+  <div class="card">
+    <h2>Income vs expenses</h2>
+    <div class="bars">
+      ${months.map((x) => `
+        <div class="bcol">
+          <div class="bpair">
+            <i style="height:${(x.inc / max) * 100}%;background:var(--green)"></i>
+            <i style="height:${(x.exp / max) * 100}%;background:var(--red)"></i>
+          </div>
+          <div class="muted" style="font-size:11px">${new Date(x.m + '-01').toLocaleDateString('en-US', { month:'short' })}</div>
+        </div>`).join('')}
+    </div>
+    <div class="legend"><span><span class="dot" style="background:var(--green)"></span>Income</span><span><span class="dot" style="background:var(--red)"></span>Expenses</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Spending by category</h2>
+    ${cats.length ? cats.map(([k, v]) => `
+      <div style="margin-bottom:12px">
+        <div class="row"><span>${esc(catName(k))}</span><span class="amt">${money(v)}</span></div>
+        <div class="lbar"><i style="width:${total ? (v / total) * 100 : 0}%;background:${catColor(k)}"></i></div>
+      </div>`).join('') : '<div class="muted">No spending this month.</div>'}
+  </div>`;
+}
+
+function viewGoals() {
+  return `
+  <div class="card">
+    <h2>Savings goals</h2>
+    ${D.goals.length ? D.goals.map((g) => {
+      const pct = g.target_minor ? Math.min(100, Math.round(g.saved_minor / g.target_minor * 100)) : 0;
+      const done = g.saved_minor >= g.target_minor;
+      return `
+      <div style="padding:12px 0;border-top:1px solid var(--border)">
+        <div class="row"><div class="grow">${esc(g.name)}</div><div class="amt">${money(g.saved_minor)} / ${money(g.target_minor)}</div></div>
+        <div class="lbar"><i style="width:${pct}%"></i></div>
+        <div class="row wrap2" style="margin-top:8px">
+          <span class="muted">${done ? '<span class="ok">Completed</span>' : pct + '%'}</span>
+          <div class="row" style="gap:6px;flex:1;justify-content:flex-end">
+            ${done ? '' : `<input id="g-${g.id}" type="number" min="0" step="0.01" placeholder="Amount" style="height:36px;width:110px"><button class="btn p" data-act="saveGoal" data-id="${g.id}">Add</button>`}
+            <button class="btn d" data-act="delGoal" data-id="${g.id}">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('') : '<div class="muted">No goals yet. Create one below.</div>'}
+  </div>
+
+  <div class="card">
+    <h2>New goal</h2>
+    <div class="stack">
+      <input id="gName" placeholder="Goal name (for example, New car)">
+      <input id="gTarget" type="number" min="0" step="0.01" placeholder="Target amount">
+      <button class="primary" data-act="addGoal">Create goal</button>
+    </div>
+  </div>`;
+}
+
+function viewSettings() {
+  return `
+  <div class="card">
+    <h2>Preferences</h2>
+    <label for="sCur">Currency</label>
+    <select id="sCur">${['EGP','USD','SAR','AED','EUR'].map((c) => `<option${c === settings.cur ? ' selected' : ''}>${c}</option>`).join('')}</select>
+    <label for="sLow">Low balance alert</label>
+    <input id="sLow" type="number" min="0" value="${settings.low}">
+    <label for="sDue">Bill reminder (days before due)</label>
+    <select id="sDue">${[1,2,3,5,7].map((d) => `<option value="${d}"${d === settings.dueDays ? ' selected' : ''}>${d}</option>`).join('')}</select>
+    <button class="primary" data-act="saveSettings">Save preferences</button>
+  </div>
+
+  <div class="card">
+    <h2>Account</h2>
+    <div class="muted">Signed in as</div>
+    <div style="font-weight:700;margin-bottom:12px">${esc(ui.user?.user_metadata?.name || '')} ${esc(ui.user?.email || '')}</div>
+    <h3>Change password</h3>
+    <div class="stack">
+      <input id="pw1" type="password" placeholder="New password (8+ characters)" autocomplete="new-password">
+      <input id="pw2" type="password" placeholder="Confirm new password" autocomplete="new-password">
+      <button class="btn p" data-act="changePw">Change password</button>
+    </div>
+    <div class="sep" style="height:1px;background:var(--border);margin:16px 0"></div>
+    <div class="row wrap2">
+      <button class="btn" data-act="signOut">Sign out</button>
+      <button class="btn d" data-act="deleteAcc">Delete account</button>
+    </div>
+  </div>`;
+}
+
+// ================= ACTIONS =================
+async function refresh() { await loadAll(); render(); }
+
+async function run(fn, okMsg) {
+  try {
+    const res = await fn();
+    if (res && res.error) throw res.error;
+    await refresh();
+    if (okMsg) toast(okMsg);
+  } catch (e) {
+    toast(e.message || String(e), true);
+  }
+}
+
+function needAmount(id) {
+  const a = num(id);
+  if (!a || a <= 0) { toast('Enter an amount greater than zero.', true); return null; }
+  return a;
+}
+
+async function act(a, el) {
+  const id = el.dataset.id;
+  switch (a) {
+    case 'tab': ui.tab = el.dataset.tab; return render();
+    case 'prev': ui.month = addMonths(ui.month, -1); return render();
+    case 'next': ui.month = addMonths(ui.month, 1); return render();
+
+    case 'addIncome': {
+      const amt = needAmount('hAmt'); if (amt === null) return;
+      return run(() => sb.from('incomes').insert({ id: uuid(), amount_minor: toMinor(amt), source: val('hNote') || 'Income', date: todayStr() }), 'Income added');
+    }
+    case 'addExpense': {
+      const amt = needAmount('hAmt'); if (amt === null) return;
+      return run(() => sb.from('variable_expenses').insert({ id: uuid(), amount_minor: toMinor(amt), category_id: val('hCat') || 'other', date: todayStr(), note: val('hNote') || null }), 'Expense added');
+    }
+    case 'addVar': {
+      const amt = needAmount('eAmt'); if (amt === null) return;
+      const date = val('eDate') || todayStr();
+      return run(() => sb.from('variable_expenses').insert({ id: uuid(), amount_minor: toMinor(amt), category_id: val('eCat'), date, note: val('eNote') || null }), 'Expense added');
+    }
+    case 'delVar': {
+      if (!confirm('Delete this expense?')) return;
+      return run(() => sb.from('variable_expenses').delete().eq('id', id), 'Expense deleted');
+    }
+    case 'addFix': {
+      const name = val('fName');
+      const amt = needAmount('fAmt'); if (amt === null) return;
+      const due = parseInt(val('fDue'), 10);
+      if (!name) return toast('Enter a name for the bill.', true);
+      if (!due || due < 1 || due > 31) return toast('Due day must be between 1 and 31.', true);
+      return run(() => sb.from('fixed_expenses').insert({ id: uuid(), name, amount_minor: toMinor(amt), category_id: val('fCat'), due_day: due, start_month: firstCharge(due), is_paused: false, created_at: new Date().toISOString() }), 'Fixed bill added');
+    }
+    case 'payFix': {
+      const f = D.fixed.find((x) => x.id === id); if (!f) return;
+      if (paidIn(f.id, ui.month)) return toast('Already paid this month.', true);
+      return run(() => sb.from('fixed_payments').insert({ id: uuid(), fixed_id: f.id, name: f.name, category_id: f.category_id, year_month: ui.month, amount_minor: f.amount_minor, paid_on: isoDate(dueDate(ui.month, f.due_day)) }), 'Bill paid');
+    }
+    case 'toggleFix': {
+      const f = D.fixed.find((x) => x.id === id); if (!f) return;
+      const update = { is_paused: !f.is_paused };
+      if (f.is_paused) update.start_month = firstCharge(f.due_day);
+      return run(() => sb.from('fixed_expenses').update(update).eq('id', id), f.is_paused ? 'Bill resumed' : 'Bill paused');
+    }
+    case 'delFix': {
+      if (!confirm('Delete this bill? Past payments stay in your history.')) return;
+      return run(() => sb.from('fixed_expenses').delete().eq('id', id), 'Bill deleted');
+    }
+    case 'addGoal': {
+      const name = val('gName');
+      const target = num('gTarget');
+      if (!name) return toast('Enter a goal name.', true);
+      if (!target || target <= 0) return toast('Enter a target amount.', true);
+      return run(() => sb.from('savings_goals').insert({ id: uuid(), name, target_minor: toMinor(target), saved_minor: 0, created_at: new Date().toISOString() }), 'Goal created');
+    }
+    case 'saveGoal': {
+      const g = D.goals.find((x) => x.id === id); if (!g) return;
+      const amt = parseFloat(val('g-' + id));
+      if (!amt || amt <= 0) return toast('Enter an amount to add.', true);
+      const saved = Math.min(g.target_minor, g.saved_minor + toMinor(amt));
+      return run(() => sb.from('savings_goals').update({ saved_minor: saved }).eq('id', id), 'Savings added');
+    }
+    case 'delGoal': {
+      if (!confirm('Delete this goal?')) return;
+      return run(() => sb.from('savings_goals').delete().eq('id', id), 'Goal deleted');
+    }
+    case 'saveSettings': {
+      settings.cur = val('sCur') || 'EGP';
+      settings.low = parseFloat(val('sLow')) || 0;
+      settings.dueDays = parseInt(val('sDue'), 10) || 2;
+      localStorage.setItem('sf_settings', JSON.stringify(settings));
+      toast('Preferences saved');
+      return render();
+    }
+    case 'changePw': {
+      const p1 = val('pw1'), p2 = val('pw2');
+      if (p1.length < 8) return toast('Use at least 8 characters.', true);
+      if (p1 !== p2) return toast('Passwords do not match.', true);
+      const { error } = await sb.auth.updateUser({ password: p1 });
+      if (error) return toast(error.message, true);
+      $('pw1').value = ''; $('pw2').value = '';
+      return toast('Password changed');
+    }
+    case 'signOut': return sb.auth.signOut();
+    case 'deleteAcc': {
+      if (!confirm('Permanently delete your account and all data? This cannot be undone.')) return;
+      const { error } = await sb.rpc('delete_my_account');
+      if (error) return toast(error.message, true);
+      return sb.auth.signOut();
+    }
+  }
+}
+
+// ================= EVENTS =================
+document.addEventListener('click', (e) => {
+  const el = e.target.closest('[data-act]');
+  if (el && !el.disabled) act(el.dataset.act, el);
+});
+
+// ================= AUTH SCREENS =================
+const AUTH_TEXT = {
+  login: { title:'Welcome back', btn:'Log in' },
+  signup: { title:'Create your account', btn:'Create account' },
+  forgot: { title:'Reset your password', btn:'Send reset link' },
+};
+
+function setAuthMode(mode) {
+  ui.mode = mode;
+  $('authMsg').textContent = '';
+  document.querySelectorAll('#auth .err').forEach((e) => (e.textContent = ''));
+  document.querySelectorAll('#auth input').forEach((i) => i.classList.remove('bad'));
+  $('nameField').classList.toggle('hidden', mode !== 'signup');
+  $('pwField').classList.toggle('hidden', mode === 'forgot');
+  $('cpwField').classList.toggle('hidden', mode !== 'signup');
+  $('toForgot').classList.toggle('hidden', mode !== 'login');
+  $('toSignup').classList.toggle('hidden', mode !== 'login');
+  $('toLogin').classList.toggle('hidden', mode === 'login');
+  $('authTitle').textContent = AUTH_TEXT[mode].title;
+  $('authBtn').textContent = AUTH_TEXT[mode].btn;
+}
+
+function fieldErr(id, msg) {
+  document.querySelector(`#auth [data-for="${id}"]`).textContent = msg;
+  $(id).classList.add('bad');
+}
+
+function validateAuth() {
+  let ok = true;
+  document.querySelectorAll('#auth .err').forEach((e) => (e.textContent = ''));
+  document.querySelectorAll('#auth input').forEach((i) => i.classList.remove('bad'));
+  const email = val('aEmail'), pw = $('aPw').value;
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { fieldErr('aEmail', 'Enter a valid email'); ok = false; }
+  if (ui.mode === 'signup' && !val('aName')) { fieldErr('aName', 'Enter your name'); ok = false; }
+  if (ui.mode !== 'forgot' && pw.length < 8) { fieldErr('aPw', 'Use at least 8 characters'); ok = false; }
+  if (ui.mode === 'signup' && pw !== $('aCpw').value) { fieldErr('aCpw', 'Passwords do not match'); ok = false; }
+  return ok;
+}
+
+function friendlyAuthError(msg) {
+  const m = (msg || '').toLowerCase();
+  if (m.includes('invalid login')) return 'Wrong email or password.';
+  if (m.includes('already registered') || m.includes('already been registered')) return 'An account with this email already exists. Log in instead.';
+  if (m.includes('not confirmed')) return 'Confirm your email first. Check your inbox (and spam).';
+  if (m.includes('rate limit')) return 'Too many attempts. Wait a few minutes and try again.';
+  if (m.includes('password should be')) return 'Use at least 8 characters.';
+  if (m.includes('invalid api key') || m.includes('apikey')) return 'Supabase key problem. Check SUPABASE_KEY in index.html.';
+  if (m.includes('failed to fetch') || m.includes('network')) return 'No connection to Supabase. Check the internet and the project URL.';
+  if (m.includes('signups not allowed') || m.includes('signup is disabled')) return 'Sign-ups are turned off. Enable them in Supabase: Authentication → Providers.';
+  return msg;
+}
+
+$('toForgot').onclick = () => setAuthMode('forgot');
+$('toSignup').onclick = () => setAuthMode('signup');
+$('toLogin').onclick = () => setAuthMode('login');
+
+$('authBtn').onclick = async () => {
+  if (!validateAuth()) return;
+  const btn = $('authBtn'), msg = $('authMsg');
+  const email = val('aEmail'), password = $('aPw').value;
+  btn.disabled = true; msg.className = 'msg'; msg.textContent = '';
+  try {
+    if (ui.mode === 'login') {
+      const { error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+    } else if (ui.mode === 'signup') {
+      const { data, error } = await sb.auth.signUp({
+        email, password,
+        options: { data: { name: val('aName') }, emailRedirectTo: location.origin + location.pathname },
+      });
+      if (error) throw error;
+      if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        throw new Error('An account with this email already exists. Log in instead.');
+      }
+      if (!data.session) {
+        setAuthMode('login');
+        msg.className = 'msg ok';
+        msg.textContent = 'Account created. Check your email to confirm it, then log in.';
+      }
+    } else {
+      const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+      if (error) throw error;
+      msg.className = 'msg ok';
+      msg.textContent = 'Reset link sent. Open it in this browser.';
+    }
+  } catch (e) {
+    msg.className = 'msg no';
+    msg.textContent = friendlyAuthError(e.message);
+    console.error('Auth error:', e);
+  } finally {
+    btn.disabled = false;
+  }
+};
+
+$('resetBtn').onclick = async () => {
+  const a = $('rPw').value, b = $('rPw2').value;
+  document.querySelectorAll('#reset .err').forEach((e) => (e.textContent = ''));
+  let ok = true;
+  if (a.length < 8) { document.querySelector('[data-for="rPw"]').textContent = 'Use at least 8 characters'; ok = false; }
+  if (a !== b) { document.querySelector('[data-for="rPw2"]').textContent = 'Passwords do not match'; ok = false; }
+  if (!ok) return;
+  const { error } = await sb.auth.updateUser({ password: a });
+  if (error) { $('resetMsg').className = 'msg no'; $('resetMsg').textContent = friendlyAuthError(error.message); return; }
+  history.replaceState(null, '', location.pathname);
+  $('reset').classList.add('hidden');
+  await enterApp();
+};
+
+// ================= SESSION =================
+async function enterApp() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return leaveApp();
+  ui.user = user;
+  $('reset').classList.add('hidden');
+  try {
+    await loadAll();
+  } catch (e) {
+    toast('Could not load your data: ' + (e.message || e), true);
+  }
+  render();
+}
+
+function leaveApp() {
+  ui.user = null;
+  $('reset').classList.add('hidden');
+  setAuthMode('login');
+  render();
+}
+
+if (!sb) {
+  // Library missing: the message is already shown above.
+} else if (location.protocol === 'file:') {
+  $('auth').classList.remove('hidden');
+  $('authMsg').className = 'msg no';
+  $('authMsg').textContent = 'Open the online link (https://...). This file cannot connect to Supabase when opened directly.';
+} else {
+  sb.auth.onAuthStateChange((event, session) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      $('auth').classList.add('hidden'); $('app').classList.add('hidden'); $('nav').classList.add('hidden');
+      $('reset').classList.remove('hidden');
+      return;
+    }
+    if (event === 'SIGNED_IN' && session && !ui.user) enterApp();
+    if (event === 'SIGNED_OUT') leaveApp();
+  });
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await enterApp(); else leaveApp();
+  })();
+}
+</script>
+</body>
+</html>
